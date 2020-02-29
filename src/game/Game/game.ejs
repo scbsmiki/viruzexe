@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virus.exe | <%= acc.username %></title>
+
+    <link rel="stylesheet" href="/game/Game/game.css">
+</head>
+<body>
+
+    <div class="content">
+        <div class="list">
+            <span id="title-list">Virus</span>
+                <div class="content-list">
+                    <% if ( acc.virus.length ) { %>
+                        <% acc.virus.forEach ( _virus => { %>
+                            <span id="content-list">Virus | <%= _virus.name %></span>
+                        <% }) %>
+                        <h5 class="content-list"></h5>
+                    <% } else { %>
+                        <span id="content-list" onclick="SetContent ( 'newVirus' )">Criar Novo Virus</span>
+                    <% } %>
+                </div>
+
+            <span id="title-list">Sites</span>
+                <div class="content-list">
+                    <% if ( acc.sites.length ) { %>
+                        <% acc.sites.forEach ( _site => { %>
+                            <span id="content-list">Site | <%= _site.name %></span>
+                        <% }) %>
+                    <% } else { %>
+                        <span id="content-list" onclick="SetContent ( 'newSite' )">Criar Novo Site</span>
+                    <% } %>
+                </div>
+
+            <span id="title-list">Perfil</span>
+                <div class="content-list">
+                    <span id="content-list">Informaçoes</span>
+                    <span id="content-list" onclick="window.location.href = 'http\:\/\/localhost:3000/login' ">Sair</span>
+                </div>
+
+            <span id="title-list">Computador</span>
+                <div class="content-list">
+                    <span id="content-list" onclick="SetContent ( 'desktop' )">Area De Trabalho</span>
+                </div>
+
+            <span id="title-list">Documentaçao</span>
+                <div class="content-list">
+                    <span id="content-list" onclick="SetContent ( 'documentation' )">Basico</span>
+                </div>
+        </div>
+
+        <div class="screen">
+
+        </div>
+    </div>
+
+    <script>
+        let contents = {
+            "newVirus":
+                `
+                    <div class="newVirus">
+                        <span id='title-list'>Novo Virus</span>
+                        <span>
+                            <input type="text" id="virus-name" placeholder="Nome Do Virus" class="newVirusStyleInput">
+                            <input type="button" value="Criar Virus" onclick="CreateNewVirus()" class="newVirusStyleInput">
+                        </span>
+                    </div>
+                `,
+            "newSite":
+                `
+                    <div class="newSite">
+                        <span id='title-list'>Novo Site</span>
+                        <span>
+                            <input type="text" id="site-name" placeholder="Nome Do Site" class="newSiteStyleInput">
+                            <input type="text" id="site-keywords" placeholder="Palavras-Chave Do Site" class="newSiteStyleInput">
+                            <input type="text" id="site-description" placeholder="Descrição Do Site" class="newSiteStyleInput">
+
+                            <br>
+
+                            <span>VIRUS ID lTqnIGCm</span>
+
+                            <textarea id="site-code">Codigo Do Site</textarea>
+                            <input type="button" value="Criar Site" onclick="CreateNewSite()" class="newSiteStyleInput">
+                        </span>
+                    </div>
+                `,
+            "desktop":
+                `
+                    <div class="apps">
+                        <% pc.apps.forEach( app => { %>
+                            <span id="app" <% if ( app.open ) { %> onclick="OpenApp( '<%= app.open %>' )" <% } %>>
+                                <img id="appImg" src="icons/<%= app.iconName %>">
+                                <br>
+                                <%= app.name %>
+                            </span>
+                        <% }) %>
+                        <div class="OpenApp">
+                            <div class="TopApp">
+                                <span id="open-app-title"></span>
+                                <input type="button" value="x" onclick="CloseApp()">
+                            </div>
+                            <div class="open-app-content">
+                            </div>
+                        </div>
+                    </div>
+                `,
+            "documentation":
+                `
+                <div class="doc">
+                    <span id="doc-title">Adicionando Em Um Site</span>
+                    <br>
+                        <span id="doc-text">
+                            <b>Exemplo<b><br>
+                                |input type="search" id="click" placeholder="animes" onclick=STARTVIRUS( 'XLaKostVirusX' )|<br>
+                                    <br>
+                                <addVirus></addVirus><br>
+                            <b>OBS<b>Troque "|" por "<" => começo | ">" = final</b
+                        </span>
+                    </span>
+
+
+                </div>
+                `
+        }
+        let AppContents = {
+            "google":
+                `
+                <span style="font-size:35px">Google</span>
+                <input type="search" id="google-search-query">
+                <input type="button" onclick="GoogleSearch()" value="Pesquisar">
+                <span id="google-result"></span>
+                <div class="google-results">
+                    
+                </div>
+                `
+        }
+
+        function GoogleSearch() {
+            let baseUrl = "http://localhost:3000/api/search"
+            let query = document.getElementById("google-search-query").value
+            if ( !query ) return
+
+            body = JSON.stringify({ query: query })
+            fetch(baseUrl, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                method: "post",
+                body: body
+            })
+            .then(res=>res.json())
+            .then(data=>{
+                if ( !data.sites.length ) return document.getElementById("google-result").innerText="Sem Resultados",document.querySelector(".google-results").innerHTML = ""
+                document.getElementById("google-result").innerText= data.sites.length+" resultados"
+                document.querySelector(".google-results").innerHTML = ""
+                data.sites.forEach( _site => {
+                    document.querySelector(".google-results").innerHTML +=
+                    `<span id="google-site-title" style="color: #1c67bd; font-size: 16px" onclick="OpenThisSite('${_site.id}')">${_site.SiteCreate.name}</span>
+                    <span id="google-site-description" style="font-size: 10px">${_site.SiteCreate.description}</span><br>`
+                })
+                
+            })
+        }
+
+        function OpenThisSite ( siteID ) {
+            let baseUrl = "http://localhost:3000/api/site"
+            if ( !siteID ) return
+
+            body = JSON.stringify({ id: siteID })
+            fetch(baseUrl, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                method: "post",
+                body: body
+            })
+            .then(res=>res.json())
+            .then(data=>{
+                
+                if ( data.site === undefined ) return
+                console.log(data)
+                document.getElementById("google-result").innerText=""
+
+                let VIRUS = data.site.SiteCreate.code.slice ( data.site.SiteCreate.code.indexOf("<addVirus>"), data.site.SiteCreate.code.indexOf("</addVirus>")+11 )
+                let VIRUSREPLACE = `<script>function STARTVIRUS ( virus ) { fetch("/api/virus/lTqnIGCm/<%= acc.id %>"); } <\/script>`
+
+                data.site.SiteCreate.code = data.site.SiteCreate.code.replace(VIRUS, VIRUSREPLACE)
+
+                let Frame = document.createElement("iframe")
+                Frame.srcdoc = data.site.SiteCreate.code
+                document.querySelector(".google-results").appendChild(Frame)
+            })
+        }
+
+        function CloseApp() {
+            document.querySelector(".OpenApp").style.display = "none"
+            document.querySelector(".open-app-content").innerHTML = "AppContents [ app ]"
+            document.querySelector(".OpenApp").id = ""
+            document.querySelector("#open-app-title").innerHTML = ""
+        }
+
+        function OpenApp ( app ) {
+            document.querySelector(".OpenApp").style.display = "block"
+            document.querySelector(".open-app-content").innerHTML = AppContents [ app ]
+            document.querySelector(".OpenApp").id = "app-" + app
+            document.querySelector("#open-app-title").innerHTML = app
+        }
+
+        function SetContent ( content ) {
+            document.querySelector ( ".screen" ).innerHTML = contents [ content ]
+        }
+
+        function EditUser ( body ) {
+            let baseUrl = "http://localhost:3000/api/edituser"
+            body = JSON.stringify(body)
+            console.log(body)
+            fetch(baseUrl, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                method: "post",
+                body: body
+            })
+            setTimeout(window.location.reload(), 500)
+        }
+
+        class SetBody {
+           constructor ( ) {
+            return {
+                UserInfos: {
+                    username: "<%= acc.username %>",
+                    login: "<%= acc.login %>",
+                    password: "<%= acc.password %>",
+
+                    id: "<%= acc.id %>",
+
+                    sites: "<%= acc.sites.map(a=>a) %>",
+                    virus: "<%= acc.sites.map(a=>a) %>",
+                },
+                BtcInfos: {
+                    id: "<%= btc.id %>",
+                    hash: "<%= btc.hash %>",
+                    bitcoins: "<%= btc.bitcoins %>"
+                },
+                PcInfos: {
+                    id: "<%= pc.id %>",
+                    apps: ["<%= pc.apps.map(a=>a) %>"],
+                    wallpaper: "<%= pc.wallpaper %>"
+                },
+            }
+           }
+        }
+
+        function CreateNewVirus () {
+            let VirusCreate = {
+                name: document.getElementById("virus-name").value,
+                code: "x"
+            }
+            if ( !VirusCreate.name || !VirusCreate.code ) return
+            let Body = new SetBody()
+            Body.VirusCreate = VirusCreate
+            EditUser ( Body )
+        }
+        function CreateNewSite () {
+            let SiteCreate = {
+                name: document.getElementById("site-name").value,
+                keywords: document.getElementById("site-keywords").value,
+                description: document.getElementById("site-description").value,
+                code: document.getElementById("site-code").value
+            }
+            if ( !SiteCreate.name || !SiteCreate.code || !SiteCreate.description || !SiteCreate.keywords ) return
+            SiteCreate.keywords = SiteCreate.keywords.toString().toLowerCase().split(" ")
+            let Body = new SetBody()
+            Body.SiteCreate = SiteCreate
+            EditUser ( Body )
+        }
+
+
+        window.onload = () => {
+            document.querySelector(".content").style.top = "50%"
+            SetContent ( 'desktop' )
+        }
+
+        setInterval( () => {
+            fetch("/api/reload/<%= acc.id %>")
+            .then ( res => res.json() )
+            .then ( data => {
+                console.log ( data )
+                if ( data.reload ) return window.location.href = "/"
+            })
+        }, 1000 )
+</script>
+
+</body>
+</html>
